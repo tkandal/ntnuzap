@@ -23,12 +23,12 @@ func UTCTimeEncoder(t time.Time, enc zapcore.PrimitiveArrayEncoder) {
 func NTNUEncoderConfig(utc bool) zapcore.EncoderConfig {
     enc := zapcore.EncoderConfig{
         // Keys can be anything except the empty string.
-        TimeKey:        "ts",
+        TimeKey:        "time",
         LevelKey:       "level",
         NameKey:        "logger",
-        CallerKey:      "caller",
+        CallerKey:      "module",
         MessageKey:     "msg",
-        StacktraceKey:  "stacktrace",
+        StacktraceKey:  "stack",
         LineEnding:     zapcore.DefaultLineEnding,
         EncodeLevel:    zapcore.CapitalLevelEncoder,
         EncodeTime:     zapcore.ISO8601TimeEncoder,
