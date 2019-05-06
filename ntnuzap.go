@@ -5,6 +5,7 @@ import (
     "go.uber.org/zap"
     "go.uber.org/zap/zapcore"
     "gopkg.in/natefinch/lumberjack.v2"
+    "os"
     "time"
 )
 
@@ -84,11 +85,35 @@ func NTNULumberjack(logfile string, maxSize int, maxBack int, maxAge int, utc bo
         MaxBackups: maxBack,
         MaxAge:     maxAge, // days
     })
-    core := zapcore.NewCore(
-        zapcore.NewJSONEncoder(NTNUEncoderConfig(utc)),
-        w,
-        zap.InfoLevel,
-    )
+
+    // First, define our level-handling logic.
+    highPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+        return lvl >= zapcore.ErrorLevel
+    })
+
+    infoLevel := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+        return lvl >= zapcore.InfoLevel
+    })
+
+    lowPriority := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+        return lvl < zapcore.ErrorLevel
+    })
+
+    // High-priority output should also go to standard error, and low-priority
+    // output should also go to standard out.
+    consoleDebugging := zapcore.Lock(os.Stdout)
+    consoleErrors := zapcore.Lock(os.Stderr)
+
+    // Encode as JSON to all endpoints
+    consoleStdErr := zapcore.NewCore(zapcore.NewJSONEncoder(NTNUEncoderConfig(utc)), consoleErrors, highPriority)
+    consoleStdout := zapcore.NewCore(zapcore.NewJSONEncoder(NTNUEncoderConfig(utc)), consoleDebugging, lowPriority)
+    rolling := zapcore.NewCore(zapcore.NewJSONEncoder(NTNUEncoderConfig(utc)), w, infoLevel)
+
+    // Join the outputs, encoders, and level-handling functions into
+    // zapcore.Cores, then tee the four cores together.
+    core := zapcore.NewTee(consoleStdErr, consoleStdout, rolling)
+
     logger := zap.New(core)
+
     return logger.WithOptions(zap.AddCaller()), nil
 }
