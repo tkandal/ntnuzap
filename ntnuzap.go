@@ -110,7 +110,7 @@ func NTNULumberjack(logfile string, maxSize int, maxBack int, maxAge int, utc bo
     rolling := zapcore.NewCore(zapcore.NewJSONEncoder(NTNUEncoderConfig(utc)), w, infoLevel)
 
     // Join the outputs, encoders, and level-handling functions into
-    // zapcore.Cores, then tee the four cores together.
+    // zapcore.Cores, then tee the three cores together.
     core := zapcore.NewTee(consoleStdErr, consoleStdout, rolling)
 
     logger := zap.New(core)
