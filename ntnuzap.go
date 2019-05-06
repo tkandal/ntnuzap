@@ -46,8 +46,8 @@ func NTNUEncoderConfig(utc bool) zapcore.EncoderConfig {
 // level is logging level
 // developement ...
 // utc set to true if the timestamps should be UTC time
-func NTNUConfig(level zapcore.Level, development bool, utc bool) zap.Config {
-    return zap.Config{
+func NTNUConfig(files []string, level zapcore.Level, development bool, utc bool) zap.Config {
+    cfg := zap.Config{
         Level:            zap.NewAtomicLevelAt(level),
         Development:      development,
         Encoding:         "json",
@@ -55,6 +55,10 @@ func NTNUConfig(level zapcore.Level, development bool, utc bool) zap.Config {
         OutputPaths:      []string{"stderr"},
         ErrorOutputPaths: []string{"stderr"},
     }
+    if len(files) > 0 {
+        cfg.OutputPaths = files
+    }
+    return cfg
 }
 
 // NTNUZap builds an custom logger for uber zap that logs to stderr.
@@ -62,8 +66,8 @@ func NTNUConfig(level zapcore.Level, development bool, utc bool) zap.Config {
 // level is logging level
 // developement ...
 // utc set to true if the timestamps should be UTC time
-func NTNUZap(level zapcore.Level, development bool, utc bool) (*zap.Logger, error) {
-    return NTNUConfig(level, development, utc).Build()
+func NTNUZap(files []string, level zapcore.Level, development bool, utc bool) (*zap.Logger, error) {
+    return NTNUConfig(files, level, development, utc).Build()
 }
 
 // NTNULumberjack builds a custom rotating file-logger for uber zap.
