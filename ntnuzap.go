@@ -53,10 +53,10 @@ func NTNUConfig(files []string, level zapcore.Level, development bool, utc bool)
         Development:      development,
         Encoding:         "json",
         EncoderConfig:    NTNUEncoderConfig(utc),
-        OutputPaths:      []string{"stderr"},
+        OutputPaths:      []string{"stdout"},
         ErrorOutputPaths: []string{"stderr"},
     }
-    if len(files) > 0 {
+    if files != nil && len(files) > 0 {
         cfg.OutputPaths = files
     }
     return cfg
